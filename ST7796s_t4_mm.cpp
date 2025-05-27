@@ -1,11 +1,10 @@
-#include "ILI948x_t4_mm.h"
-//DMAMEM uint32_t framebuff[DATABUFBYTES];
+#include "ST7796s_t4_mm.h"
 
 #if !defined(ARDUINO_TEENSY_MICROMOD)
 #error This library only supports the Teensy Micromod!
 #endif
 
-FLASHMEM ILI948x_t4_mm::ILI948x_t4_mm(int8_t dc, int8_t cs, int8_t rst) 
+FLASHMEM ST7796s_t4_mm::ST7796s_t4_mm(int8_t dc, int8_t cs, int8_t rst) 
 {
   
   _dc = dc;
@@ -14,7 +13,7 @@ FLASHMEM ILI948x_t4_mm::ILI948x_t4_mm(int8_t dc, int8_t cs, int8_t rst)
   
 }
 
-FLASHMEM void ILI948x_t4_mm::begin(uint8_t buad_div) 
+FLASHMEM void ST7796s_t4_mm::begin(uint8_t buad_div) 
 {
   //Serial.printf("Bus speed: %d Mhz \n", buad_div);
   switch (buad_div) {
@@ -74,7 +73,7 @@ FLASHMEM void ILI948x_t4_mm::begin(uint8_t buad_div)
 }
 
 
-FLASHMEM uint8_t ILI948x_t4_mm::setBitDepth(uint8_t bitDepth)  
+FLASHMEM uint8_t ST7796s_t4_mm::setBitDepth(uint8_t bitDepth)  
 {
   uint8_t bd;
 
@@ -93,7 +92,7 @@ FLASHMEM uint8_t ILI948x_t4_mm::setBitDepth(uint8_t bitDepth)
               break;
   }
  
-  SglBeatWR_nPrm_8(ILI9488_COLMOD, &bd, 1);
+  SglBeatWR_nPrm_8(ST7796S_COLMOD, &bd, 1);
 
   //Insert small delay here as rapid calls appear to fail
   delay(10);
@@ -101,12 +100,12 @@ FLASHMEM uint8_t ILI948x_t4_mm::setBitDepth(uint8_t bitDepth)
   return _bitDepth;
 }
 
-FLASHMEM uint8_t ILI948x_t4_mm::getBitDepth()
+FLASHMEM uint8_t ST7796s_t4_mm::getBitDepth()
 {
   return _bitDepth;
 }
 
-FLASHMEM void ILI948x_t4_mm::setFrameRate(uint8_t frRate) 
+FLASHMEM void ST7796s_t4_mm::setFrameRate(uint8_t frRate) 
 {
  _frameRate = frRate;
 
@@ -116,7 +115,7 @@ FLASHMEM void ILI948x_t4_mm::setFrameRate(uint8_t frRate)
   uint8_t fr45Hz[2] = {0x70, 0x11}; // 45.57fps, 17 clocks
   uint8_t fr54Hz[2] = {0x90, 0x11}; // 54.69ps, 17 clocks
   uint8_t fr60Hz[2] = {0xA0, 0x11}; // 60.76fps, 17 clocks
-  uint8_t fr68Hz[2] = {0xB0, 0x11}; // 68.36fps, 17 clocks (ILI9488 default)
+  uint8_t fr68Hz[2] = {0xB0, 0x11}; // 68.36fps, 17 clocks (ST7796S default)
   uint8_t fr78Hz[2] = {0xC0, 0x11}; // 78.13fps, 17 clocks
   uint8_t fr91Hz[2] = {0xD0, 0x11}; // 91.15fps, 17 clocks
 
@@ -135,16 +134,16 @@ FLASHMEM void ILI948x_t4_mm::setFrameRate(uint8_t frRate)
     default: memcpy(frData, fr60Hz, sizeof fr60Hz); _frameRate = 60; break;
   }
 
-  SglBeatWR_nPrm_8(ILI9488_FRMCTR1, frData, 2);
+  SglBeatWR_nPrm_8(ST7796S_FRMCTR1, frData, 2);
   
 }
 
-FLASHMEM uint8_t ILI948x_t4_mm::getFrameRate()
+FLASHMEM uint8_t ST7796s_t4_mm::getFrameRate()
 {
   return _frameRate;
 }
 
-FLASHMEM void ILI948x_t4_mm::setTearingEffect(bool tearingOn)
+FLASHMEM void ST7796s_t4_mm::setTearingEffect(bool tearingOn)
 {
 
   _bTearingOn = tearingOn;
@@ -152,34 +151,34 @@ FLASHMEM void ILI948x_t4_mm::setTearingEffect(bool tearingOn)
   
   CSLow();
   if (_bTearingOn == true) {
-    SglBeatWR_nPrm_8(ILI9488_TEON, &mode, 1);        //Tearing effect line on, mode 0 (V-Blanking)
+    SglBeatWR_nPrm_8(ST7796S_TEON, &mode, 1);        //Tearing effect line on, mode 0 (V-Blanking)
   } else {
-    SglBeatWR_nPrm_8(ILI9488_TEOFF,0,0);
+    SglBeatWR_nPrm_8(ST7796S_TEOFF,0,0);
   }
   CSHigh();
 
 }
 
-FLASHMEM bool ILI948x_t4_mm::getTearingEffect()
+FLASHMEM bool ST7796s_t4_mm::getTearingEffect()
 {
   return _bTearingOn;
 }
 
-FLASHMEM void ILI948x_t4_mm::setTearingScanLine(uint16_t scanLine)
+FLASHMEM void ST7796s_t4_mm::setTearingScanLine(uint16_t scanLine)
 {
   _tearingScanLine = scanLine;
   
   uint8_t params[2] = {(uint8_t)(_tearingScanLine << 8), (uint8_t)(_tearingScanLine & 0xFF)};
-  SglBeatWR_nPrm_8(ILI9488_TESLWR, params, 2);      //Tearing effect write scan line : 0x00 0x00 = line 0 (default), 0x00 0xA0 = line 160, 0x00 0xF0 = line 240
+  SglBeatWR_nPrm_8(ST7796S_TESLWR, params, 2);      //Tearing effect write scan line : 0x00 0x00 = line 0 (default), 0x00 0xA0 = line 160, 0x00 0xF0 = line 240
 
 }
 
-FLASHMEM uint16_t ILI948x_t4_mm::getTearingScanLine()
+FLASHMEM uint16_t ST7796s_t4_mm::getTearingScanLine()
 {
   return _tearingScanLine;
 }
 
-FLASHMEM void ILI948x_t4_mm::setRotation(uint8_t r) 
+FLASHMEM void ST7796s_t4_mm::setRotation(uint8_t r) 
 { 
   _rotation = r & 3;
 
@@ -194,21 +193,21 @@ FLASHMEM void ILI948x_t4_mm::setRotation(uint8_t r)
             break;
 	}
 
-  SglBeatWR_nPrm_8(ILI9488_MADCTL, &MADCTL[_rotation], 1);
+  SglBeatWR_nPrm_8(ST7796S_MADCTL, &MADCTL[_rotation], 1);
 }
 
-FLASHMEM void ILI948x_t4_mm::invertDisplay(bool invert) 
+FLASHMEM void ST7796s_t4_mm::invertDisplay(bool invert) 
 {
-  SglBeatWR_nPrm_8(invert ? ILI9488_INVON : ILI9488_INVOFF,0,0);
+  SglBeatWR_nPrm_8(invert ? ST7796S_INVON : ST7796S_INVOFF,0,0);
 }
 
-FLASHMEM void ILI948x_t4_mm::onCompleteCB(CBF callback)
+FLASHMEM void ST7796s_t4_mm::onCompleteCB(CBF callback)
 {
   _callback = callback;
   isCB = true;
 }
 
-FASTRUN void ILI948x_t4_mm::setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) 
+FASTRUN void ST7796s_t4_mm::setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) 
 {
   uint8_t Command;
   uint8_t CommandValue[4];
@@ -230,22 +229,22 @@ FASTRUN void ILI948x_t4_mm::setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2,
 }
 
 
-FASTRUN void ILI948x_t4_mm::displayInfo(){
+FASTRUN void ST7796s_t4_mm::displayInfo(){
   CSLow();
-  Serial.printf("Manufacturer ID: 0x%02X\n",    readCommand(ILI9488_RDID1)); 
-  Serial.printf("Module Version ID: 0x%02X\n",  readCommand(ILI9488_RDID2)); 
-  Serial.printf("Module ID: 0x%02X\n",          readCommand(ILI9488_RDID3)); 
-	Serial.printf("Display Power Mode: 0x%02X\n", readCommand(ILI9488_RDMODE));
-	Serial.printf("MADCTL Mode: 0x%02X\n",        readCommand(ILI9488_RDMADCTL));
-	Serial.printf("Pixel Format: 0x%02X\n",       readCommand(ILI9488_RDCOLMOD));
-	Serial.printf("Image Format: 0x%02X\n",       readCommand(ILI9488_RDIMGFMT)); 
-  Serial.printf("Signal Mode: 0x%02X\n",        readCommand(ILI9488_RDDSM)); 
-  uint8_t sdRes = readCommand(ILI9488_RDSELFDIAG);
+  Serial.printf("Manufacturer ID: 0x%02X\n",    readCommand(ST7796S_RDID1)); 
+  Serial.printf("Module Version ID: 0x%02X\n",  readCommand(ST7796S_RDID2)); 
+  Serial.printf("Module ID: 0x%02X\n",          readCommand(ST7796S_RDID3)); 
+	Serial.printf("Display Power Mode: 0x%02X\n", readCommand(ST7796S_RDMODE));
+	Serial.printf("MADCTL Mode: 0x%02X\n",        readCommand(ST7796S_RDMADCTL));
+	Serial.printf("Pixel Format: 0x%02X\n",       readCommand(ST7796S_RDCOLMOD));
+	Serial.printf("Image Format: 0x%02X\n",       readCommand(ST7796S_RDIMGFMT)); 
+  Serial.printf("Signal Mode: 0x%02X\n",        readCommand(ST7796S_RDDSM)); 
+  uint8_t sdRes = readCommand(ST7796S_RDSELFDIAG);
   Serial.printf("Self Diagnostic: %s (0x%02X)\n", sdRes == 0xc0 ? "OK" : "Failed", sdRes);
 CSHigh();
 }
 
-FASTRUN void ILI948x_t4_mm::pushPixels16bit(const uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+FASTRUN void ST7796s_t4_mm::pushPixels16bit(const uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
   while(WR_DMATransferDone == false)
   {
@@ -256,10 +255,10 @@ FASTRUN void ILI948x_t4_mm::pushPixels16bit(const uint16_t * pcolors, uint16_t x
   setAddrWindow( x1, y1, x2, y2);
      _lastx1 = x1;  _lastx2 = x2;  _lasty1 = y1;  _lasty2 = y2;
   }
-  SglBeatWR_nPrm_16(ILI9488_RAMWR, pcolors, area);
+  SglBeatWR_nPrm_16(ST7796S_RAMWR, pcolors, area);
 }
 
-FASTRUN void ILI948x_t4_mm::pushPixels16bitDMA(const uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2){
+FASTRUN void ST7796s_t4_mm::pushPixels16bitDMA(const uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2){
   while(WR_DMATransferDone == false)
   {
     //Wait for any DMA transfers to complete
@@ -270,7 +269,7 @@ FASTRUN void ILI948x_t4_mm::pushPixels16bitDMA(const uint16_t * pcolors, uint16_
      _lastx1 = x1;  _lastx2 = x2;  _lasty1 = y1;  _lasty2 = y2;
   }
 
-  MulBeatWR_nPrm_DMA(ILI9488_RAMWR, pcolors, area);
+  MulBeatWR_nPrm_DMA(ST7796S_RAMWR, pcolors, area);
 }
 
 
@@ -280,748 +279,162 @@ FASTRUN void ILI948x_t4_mm::pushPixels16bitDMA(const uint16_t * pcolors, uint16_
 ///////////////////
 //Private functions
 ///////////////////
-FLASHMEM void ILI948x_t4_mm::displayInit() 
+FLASHMEM void ST7796s_t4_mm::displayInit() 
 {
-  uint8_t Command;
-  uint8_t CommandValue[25];
+    uint8_t Command;
+    uint8_t CommandValue[25];
 
-
-#if defined (ILI9481_1)
-    Command = 0x01; //SW RST
-    SglBeatWR_nPrm_8(Command,0 ,0);
-    delay(120);
-
-    Command = 0x11; 
+    // Software Reset
+    Command = 0x01;
     SglBeatWR_nPrm_8(Command, 0, 0);
-    delay(20);
-
-    
-    Command = 0xD0; 
-    CommandValue[0U] = 0x07;
-    CommandValue[1U] = 0x41;
-    CommandValue[2U] = 0x1D;
-    SglBeatWR_nPrm_8(Command, CommandValue, 3U);
-
-    Command = 0xD1; 
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x2B;
-    CommandValue[2U] = 0x1F;
-    SglBeatWR_nPrm_8(Command, CommandValue, 3U);
-
-    Command = 0xD2; 
-    CommandValue[0U] = 0x01;
-    CommandValue[1U] = 0x11;
-    SglBeatWR_nPrm_8(Command, CommandValue, 2U);
-
-    Command = 0xC0; 
-    CommandValue[0U] = 0x10;
-    CommandValue[1U] = 0x3B;
-    CommandValue[2U] = 0x00;
-    CommandValue[3U] = 0x02;
-    CommandValue[4U] = 0x11;
-    CommandValue[5U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 6U);
-
-    Command = 0xC5; 
-    CommandValue[0U] = 0x03;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xC6; 
-    CommandValue[0U] = 0x80;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xC8; 
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x14;
-    CommandValue[2U] = 0x33;
-    CommandValue[3U] = 0x10;
-    CommandValue[4U] = 0x00;
-    CommandValue[5U] = 0x16;
-    CommandValue[6U] = 0x44;
-    CommandValue[7U] = 0x36;
-    CommandValue[8U] = 0x77;
-    CommandValue[9U] = 0x00;
-    CommandValue[10U] = 0x0F;
-    CommandValue[11U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 12U);
-
-    Command = 0xB0; 
-    CommandValue[0U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xE4; 
-    CommandValue[0U] = 0xA0;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-    
-    Command = 0xF0; 
-    CommandValue[0U] = 0x08;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xF3; 
-    CommandValue[0U] = 0x40;
-    CommandValue[1U] = 0x0A;
-    SglBeatWR_nPrm_8(Command, CommandValue, 2U);
-    
-
-    Command = 0xF6; 
-    CommandValue[0U] = 0x84;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xF7; 
-    CommandValue[0U] = 0x80;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xB3; 
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x01;
-    CommandValue[2U] = 0x06;
-    CommandValue[3U] = 0x30;
-    SglBeatWR_nPrm_8(Command, CommandValue, 4U);
-
-    Command = 0xB4; 
-    CommandValue[0U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0x0C; 
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x55;
-    SglBeatWR_nPrm_8(Command, CommandValue, 2U);
-    
-
-    Command = 0x36; // Memory Access Control
-    CommandValue[0U] = 0x48;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-
-    Command = 0x3A; // Set bit depth
-    CommandValue[0U] = 0x55;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-    
-    Command = 0x21; // Display Inversion On
-    SglBeatWR_nPrm_8(Command, 0, 0U);
-
     delay(120);
-    Command = 0x29; // Display On
-    SglBeatWR_nPrm_8(Command,0 ,0);
-    delay(120);
-    Serial.println("ILI9481 Initialized");
 
-#elif defined (ILI9481_2)
-    Command = 0x01; //Soft_reset
-    SglBeatWR_nPrm_8(Command, 0, 0);
-    delay(150);
-
+    // Sleep Out
     Command = 0x11;
     SglBeatWR_nPrm_8(Command, 0, 0);
-    delay(150);
+    delay(120);
 
-    Command = 0xd0; //Power_Setting
-    CommandValue[0U] =0x07;//07  VC[2:0] Sets the ratio factor of Vci to generate the reference voltages Vci1
-    CommandValue[1U] =0x44;//41  BT[2:0] Sets the Step up factor and output voltage level from the reference voltages Vci1
-    CommandValue[2U] =0x1E;//1f  17   1C  VRH[3:0]: Sets the factor to generate VREG1OUT from VCILVL
-    SglBeatWR_nPrm_8(Command, CommandValue, 3);
-    delay(150);
-
-    Command = 0xd1; //VCOM Control
-    CommandValue[0U] =0x00;//00
-    CommandValue[1U] =0x0C;//1A   VCM [6:0] is used to set factor to generate VCOMH voltage from the reference voltage VREG1OUT  15    09
-    CommandValue[2U] =0x1A;//1F   VDV[4:0] is used to set the VCOM alternating amplitude in the range of VREG1OUT x 0.70 to VREG1OUT   1F   18
-    SglBeatWR_nPrm_8(Command, CommandValue, 3);
-
-    Command =0xC5;  //Frame Rate
-    CommandValue[0U] = 0x03; // 03   02
+    // Interface Pixel Format (16-bit/pixel)
+    Command = 0x3A;
+    CommandValue[0] = 0x55; // 16-bit
     SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    Command = 0xd2;  //Power_Setting for Normal Mode 
-    CommandValue[0U] =0x01;  //01
-    CommandValue[1U] =0x11;  //11
-    SglBeatWR_nPrm_8(Command, CommandValue, 2);
-
-    Command = 0xE4;  //?
-    CommandValue[0U] =0xa0;
+    // Memory Access Control (MADCTL)
+    // No rotation: RGB order, row/column order = 0
+    Command = 0x36;
+    CommandValue[0] = 0x00; 
     SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    Command = 0xf3;
-    CommandValue[0U] =0x00;
-    CommandValue[1U] =0x2a;
-    SglBeatWR_nPrm_8(Command, CommandValue, 2);
-
-    //1  OK
-    Command =0xc8;
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x26;
-    CommandValue[2U] = 0x21;
-    CommandValue[3U] = 0x00;
-    CommandValue[4U] = 0x00;
-    CommandValue[5U] = 0x1f;
-    CommandValue[6U] = 0x65;
-    CommandValue[7U] = 0x23;
-    CommandValue[8U] = 0x77;
-    CommandValue[9U] = 0x00;
-    CommandValue[10U] = 0x0f;
-    CommandValue[11U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 12);
-    //GAMMA SETTING
-
-    Command = 0xC0;	//Panel Driving Setting																          
-    CommandValue[0U] =0x00; //1//00  REV  SM  GS
-    CommandValue[1U] =0x3B; //2//NL[5:0]: Sets the number of lines to drive the LCD at an interval of 8 lines. 
-    CommandValue[2U] =0x00; //3//SCN[6:0]
-    CommandValue[3U] =0x02; //4//PTV: Sets the Vcom output in non-display area drive period
-    CommandValue[4U] =0x11; //5//NDL: Sets the source output level in non-display area.  PTG: Sets the scan mode in non-display area.
+    // Porch Setting
+    Command = 0xB2;
+    CommandValue[0] = 0x0C;
+    CommandValue[1] = 0x0C;
+    CommandValue[2] = 0x00;
+    CommandValue[3] = 0x33;
+    CommandValue[4] = 0x33;
     SglBeatWR_nPrm_8(Command, CommandValue, 5);
 
-    Command = 0xc6; //Interface Control 
-    CommandValue[0U] =0x83;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
-    //GAMMA SETTING 
-
-    Command = 0xf0; //?
-    CommandValue[0U] =0x01;
+    // Gate Control
+    Command = 0xB7;
+    CommandValue[0] = 0x35;
     SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    Command = 0xE4;//?
-    CommandValue[0U] =0xa0;
+    // VCOM Setting
+    Command = 0xBB;
+    CommandValue[0] = 0x28;
     SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    ///��װ����OK 20180510 
-    //Command = 0x36);   
-    //CommandValue[0U] = 0x0A); //0A
-
-    ////20180510 FPC�����ұ�:CCH:03, 36H:20   OK
-    //Command = 0xCC);//SetPanel
-    //CommandValue[0U] = 0x03);//BGR_Panel  03 
-    //Command = 0x36);
-    //CommandValue[0U] = 0x20);  // MY MX MV ML BGR MH HF VF  4A     48  08  00
-                        // MY MX MV ML BGR MH X X
-                        // MY(B7) Row Address Order
-                        // MX(B6) Column Address Order
-                        // MV(B5) Row / Column Exchange
-                        // ML(B4) Vertical Refresh Order
-                        // BGR(B3)(0=RGB color filter panel, 1=BGR color filter panel)
-                        // SS(B2) Horizontal ORDER (SS),LCD horizontal refresh direction control
-                        // -
-                        // -
-                        
-    ////20180510 FPC�������: 36H:F8  
-    //Command = 0x36);
-    //CommandValue[0U] = 0xF8);
-
-    //////��װ����   NG
-    Command = 0x36;   
-    CommandValue[0U] = 0x8C; //  8C:��������   CA������һ����
+    // LCM Control
+    Command = 0xC0;
+    CommandValue[0] = 0x2C;
     SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    Command = 0x3a;
-    CommandValue[0U] =0x55;
+    // VDV and VRH Command Enable
+    Command = 0xC2;
+    CommandValue[0] = 0x01;
     SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    Command = 0xb4;//Display Mode and Frame Memory Write Mode Setting
-    CommandValue[0U] =0x02;
-    CommandValue[1U] =0x00; //?
-    CommandValue[2U] =0x00;
-    CommandValue[3U] =0x01;
-    SglBeatWR_nPrm_8(Command, CommandValue, 4);
+    // VRH Set
+    Command = 0xC3;
+    CommandValue[0] = 0x0B;
+    SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    delay(280);
+    // VDV Set
+    Command = 0xC4;
+    CommandValue[0] = 0x20;
+    SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    Command = 0x2a;
-    CommandValue[0U] =0x00;
-    CommandValue[1U] =0x00;
-    CommandValue[2U] =0x01;
-    CommandValue[3U] =0x3F; //3F
-    SglBeatWR_nPrm_8(Command, CommandValue, 4);
+    // Frame Rate Control in Normal Mode
+    Command = 0xC6;
+    CommandValue[0] = 0x0F;
+    SglBeatWR_nPrm_8(Command, CommandValue, 1);
 
-    Command = 0x2b;
-    CommandValue[0U] =0x00;
-    CommandValue[1U] =0x00;
-    CommandValue[2U] =0x01;
-    CommandValue[3U] =0xDf; //DF
-    SglBeatWR_nPrm_8(Command, CommandValue, 4);
-
-    delay(10);
-    //Command = 0x21;
-    Command = 0x29;	
-    SglBeatWR_nPrm_8(Command, 0, 0);
-
-    Command = 0x2c;	
-    SglBeatWR_nPrm_8(Command, 0, 0);
-
-#elif defined (ILI9486)
-    Command = 0x01; //SW RST
-    SglBeatWR_nPrm_8(Command,0 ,0);
-    delay(120);
-
-    Command = 0x11; // Sleep out, also SW reset
-    SglBeatWR_nPrm_8(Command, 0, 0);
-    delay(20);
-
-    Command = 0x3A; // Set bit depth
-    CommandValue[0U] = 0x55;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xC2; // Power Control 3
-    CommandValue[0U] = 0x44;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    
-    Command = 0xC5; // VCOM control
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x00;
-    CommandValue[2U] = 0x00;
-    CommandValue[3U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 4U);
-
-    Command = 0xE0; // Gamma Setting  
-    CommandValue[0U] = 0x0F;
-    CommandValue[1U] = 0x1F;
-    CommandValue[2U] = 0x1C;
-    CommandValue[3U] = 0x0C;
-    CommandValue[4U] = 0x0C;
-    CommandValue[5U] = 0x08;
-    CommandValue[6U] = 0x48;
-    CommandValue[7U] = 0x98;
-    CommandValue[8U] = 0x37;
-    CommandValue[9U] = 0x0A;
-    CommandValue[10U] = 0x13;
-    CommandValue[11U] = 0x04;
-    CommandValue[12U] = 0x11;
-    CommandValue[13U] = 0x0D;
-    CommandValue[14U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 15U);
- 
-    
-    Command = 0xE1; // Negative Gamma Setting  
-    CommandValue[0U] = 0x0F;
-    CommandValue[1U] = 0x32;
-    CommandValue[2U] = 0x2E;
-    CommandValue[3U] = 0x0B;
-    CommandValue[4U] = 0x0D;
-    CommandValue[5U] = 0x05;
-    CommandValue[6U] = 0x47;
-    CommandValue[7U] = 0x75;
-    CommandValue[8U] = 0x37;
-    CommandValue[9U] = 0x06;
-    CommandValue[10U] = 0x10;
-    CommandValue[11U] = 0x03;
-    CommandValue[12U] = 0x24;
-    CommandValue[13U] = 0x20;
-    CommandValue[14U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 15U);
-
-    Command = 0x36; // Memory Access Control
-    CommandValue[0U] = 0x48;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
- 
-    Command = 0x20; // Display Inversion OFF
-    SglBeatWR_nPrm_8(Command, 0, 0);
-    
-    Command = 0x29; // Display ON
-    SglBeatWR_nPrm_8(Command, 0, 0); 
-    delay(120);
-    Serial.println("ILI9486 Initialized");
-
-
-#elif defined (ILI9488)
-
-    Command = 0x01; //SW RST
-    SglBeatWR_nPrm_8(Command,0 ,0);
-    delay(120);
-    
-    Command = 0x11; //Exit sleep
-    SglBeatWR_nPrm_8(Command ,0 ,0);
-    delay(15);
-    Command = 0x28; //Display Off
-    SglBeatWR_nPrm_8(Command ,0 ,0);
-    delay(15);
-    
-    Command = 0xC0; // Power Control 1
-    CommandValue[0U] = 0x19;
-    CommandValue[1U] = 0x1A;
-    SglBeatWR_nPrm_8(Command, CommandValue, 2U);
-
-    Command = 0xC1; // Power Control 2
-    CommandValue[0U] = 0x45;
-    CommandValue[1U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 2U);
-
-    Command = 0xC2; // Power Control 3
-    CommandValue[0U] = 0x33;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xC5; // VCOM control
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x12;
-    CommandValue[2U] = 0x80;
-    SglBeatWR_nPrm_8(Command, CommandValue, 3U);
-
-    Command = 0xB4; // Display Inversion Control
-    CommandValue[0U] = 0x02;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xB6; // Display Function Control  RGB/MCU Interface Control
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x02;
-    CommandValue[2U] = 0x3B;
-    SglBeatWR_nPrm_8(Command, CommandValue, 3U);
-
-    Command = 0xB7; // Entry Mode Set
-    CommandValue[0U] = 0x07;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xE0; // Gamma Setting  
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x03;
-    CommandValue[2U] = 0x09;
-    CommandValue[3U] = 0x08;
-    CommandValue[4U] = 0x16;
-    CommandValue[5U] = 0x0A;
-    CommandValue[6U] = 0x3F;
-    CommandValue[7U] = 0x78;
-    CommandValue[8U] = 0x4C;
-    CommandValue[9U] = 0x09;
-    CommandValue[10U] = 0x0A;
-    CommandValue[11U] = 0x08;
-    CommandValue[12U] = 0x16;
-    CommandValue[13U] = 0x1A;
-    CommandValue[14U] = 0x0F;
-    SglBeatWR_nPrm_8(Command, CommandValue, 15U);
-
-    Command = 0xE1; // Negative Gamma Setting  
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x16;
-    CommandValue[2U] = 0x19;
-    CommandValue[3U] = 0x03;
-    CommandValue[4U] = 0x0F;
-    CommandValue[5U] = 0x05;
-    CommandValue[6U] = 0x32;
-    CommandValue[7U] = 0x45;
-    CommandValue[8U] = 0x46;
-    CommandValue[9U] = 0x04;
-    CommandValue[10U] = 0x0E;
-    CommandValue[11U] = 0x0D;
-    CommandValue[12U] = 0x35;
-    CommandValue[13U] = 0x37;
-    CommandValue[14U] = 0x0F;
-    SglBeatWR_nPrm_8(Command, CommandValue, 15U);
-
-    Command = 0x36; // Memory Access Control
-    CommandValue[0U] = 0x48;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    //delay(10);
-    Command = 0x29; // Display On
-    SglBeatWR_nPrm_8(Command,0 ,0);
-    //delay(15);
-    /*
-    Command = 0x3A; // Set bit depth
-    CommandValue[0U] = 0x55;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0x36; // Set rotation
-    CommandValue[0U] = 0x40|0x80|0x20|0x08; //Landscape
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-    */
-    delay(120);
-    Serial.println("ILI9488 Initialized");
-
-    
-
-#elif defined(R61529)
-
-    Command = 0x01; //SW RST
-    SglBeatWR_nPrm_8(Command,0 ,0);
-    delay(120);
-
-    Command = 0x11; //TFT_SLPOUT
-    SglBeatWR_nPrm_8(Command, 0, 0);
-    delay(20);
-
-    Command = 0xB0;
-    CommandValue[0U] = 0x04;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-    delay(2);
-
-    Command = 0xB8; //lcd pwm
-    CommandValue[0U] = 0x02;
-    CommandValue[1U] = 0x00;
-    CommandValue[2U] = 0x00;
-    CommandValue[3U] = 0x00;
-    CommandValue[4U] = 0x00;
-    CommandValue[5U] = 0x00;
-    CommandValue[6U] = 0x00;
-    CommandValue[7U] = 0x00;
-    CommandValue[8U] = 0x00;
-    CommandValue[9U] = 0x00;
-    CommandValue[10U] = 0x00;
-    CommandValue[11U] = 0x00;
-    CommandValue[12U] = 0x00;
-    CommandValue[13U] = 0x00;
-    CommandValue[14U] = 0x00;
-    CommandValue[15U] = 0x00;
-    CommandValue[16U] = 0x00;
-    CommandValue[17U] = 0x00;
-    CommandValue[18U] = 0x00;
-    CommandValue[19U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 20U);
-    
-    Command = 0xB9; //lcd pwm
-    CommandValue[0U] = 0x01; // PWMON = 1;
-    CommandValue[1U] = 0x00; // BDCV = 255;
-    CommandValue[2U] = 0xff; // pwm freq = 13.7 kHz
-    CommandValue[3U] = 0x18; // PWMWM = 1; LEDPWME = 1;
-    SglBeatWR_nPrm_8(Command, CommandValue, 4U);
-
-    //additional commands:
-    Command = 0xB3; //Frame Memory Access and Interface Setting
-    CommandValue[0U] = 0x00; // reset start position of a window area address...
-    CommandValue[1U] = 0x00; //TE pin is used. TE signal is output every frame.
-    CommandValue[2U] = 0x00; // empty according to the datasheet - does nothing;
-    CommandValue[3U] = 0x00; // convert 16/18 bits to 24bits data by writing zeroes to LSBs. Sets image data write/read format(?)
-    //CommandValue[4U] = 0x0C;  // ???? (not needed?)
-    SglBeatWR_nPrm_8(Command, CommandValue, 5U);
-    delay(2);
-
-    Command = 0xB4; //Display Mode
-    CommandValue[0U] = 0x00; //Uses internal oscillator
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-
-    Command = 0xC0; // Panel Driving Setting;
-    CommandValue[0U] = 0x03; // Output polarity is inverted. Left/right interchanging scan. Forward scan. BGR mode (depends on other settings). S960 → S1 (depends)
-    CommandValue[1U] = 0xDF; // Number of lines for driver to drive - 480.
-    CommandValue[2U] = 0x40; // Scan start position - Gate1. (depend on other param);
-    CommandValue[3U] = 0x10; // Dot inversion. Dot inversion in not-lit display area. If 0x13 - both will be set to 'column inversion'.
-    CommandValue[4U] = 0x00; // settings for non-lit display area...
-    CommandValue[5U] = 0x01; // 3 frame scan interval in non-display area...
-    CommandValue[6U] = 0x00; // Source output level in retrace period...
-    CommandValue[7U] = 0x55;//54 . Internal clock divider = 5 (low and high periods).
-    SglBeatWR_nPrm_8(Command, CommandValue, 8U);
-
-    Command = 0xC1; //Display Timing Setting for Normal Mode
-    CommandValue[0U] = 0x07; // Clock devider = 12. 14MHz/12. Used by display circuit and step-up circuit.
-    CommandValue[1U] = 0x27; // These bits set the number of clocks in 1 line period. 0x27 - 39 clocks.
-    CommandValue[2U] = 0x08; // Number of back porch lines. 0x08 - 8 lines.
-    CommandValue[3U] = 0x08; // Number of front porch lines. 0x08 - 8lines.
-    CommandValue[4U] = 0x00; // Spacial configuriation mode 1 (?). 1 line inversion mode (?).
-    SglBeatWR_nPrm_8(Command, CommandValue, 5U);
-
-    Command = 0xC4; // Source/Gate Driving Timing Setting
-    CommandValue[0U] = 0x57; // falling position (stop) of gate driver - 4 clocks... gate start position - 8 clocks...
-    CommandValue[1U] = 0x00; // nothing to set up according to the datasheet
-    CommandValue[2U] = 0x05; // Source precharge period (GND) - 5 clocks.
-    CommandValue[3U] = 0x03; // source precharge period (VCI) - 3 clocks.
-    SglBeatWR_nPrm_8(Command, CommandValue, 4U);
-
-    Command = 0xC6; //DPI polarity control
-    CommandValue[0U] = 0x04; // VSYNC -Active Low. HSYNC - Active Low. DE pin enable data write in when DE=1. Reads data on the rising edge of the PCLK signal.
-    SglBeatWR_nPrm_8(Command, CommandValue, 1U);
-    
-    //----Gamma setting start-----
-    Command = 0xC8;
-    CommandValue[0U] = 0x03;
-    CommandValue[1U] = 0x12;
-    CommandValue[2U] = 0x1A;
-    CommandValue[3U] = 0x24;
-    CommandValue[4U] = 0x32;
-    CommandValue[5U] = 0x4B;
-    CommandValue[6U] = 0x3B;
-    CommandValue[7U] = 0x29;
-    CommandValue[8U] = 0x1F;
-    CommandValue[9U] = 0x18;
-    CommandValue[10U] = 0x12;
-    CommandValue[11U] = 0x04;
-
-    
-    CommandValue[12U] = 0x03;
-    CommandValue[13U] = 0x12;
-    CommandValue[14U] = 0x1A;
-    CommandValue[15U] = 0x24;
-    CommandValue[16U] = 0x32;
-    CommandValue[17U] = 0x4B;
-    CommandValue[18U] = 0x3B;
-    CommandValue[19U] = 0x29;
-    CommandValue[20U] = 0x1F;
-    CommandValue[21U] = 0x18;
-    CommandValue[22U] = 0x12;
-    CommandValue[23U] = 0x04;
-    
-    SglBeatWR_nPrm_8(Command, CommandValue, 24);
-
-    Command = 0xC9;
-    CommandValue[0U] = 0x03;
-    CommandValue[1U] = 0x12;
-    CommandValue[2U] = 0x1A;
-    CommandValue[3U] = 0x24;
-    CommandValue[4U] = 0x32;
-    CommandValue[5U] = 0x4B;
-    CommandValue[6U] = 0x3B;
-    CommandValue[7U] = 0x29;
-    CommandValue[8U] = 0x1F;
-    CommandValue[9U] = 0x18;
-    CommandValue[10U] = 0x12;
-    CommandValue[11U] = 0x04;
-
-    CommandValue[12U] = 0x03;
-    CommandValue[13U] = 0x12;
-    CommandValue[14U] = 0x1A;
-    CommandValue[15U] = 0x24;
-    CommandValue[16U] = 0x32;
-    CommandValue[17U] = 0x4B;
-    CommandValue[18U] = 0x3B;
-    CommandValue[19U] = 0x29;
-    CommandValue[20U] = 0x1F;
-    CommandValue[21U] = 0x18;
-    CommandValue[22U] = 0x12;
-    CommandValue[23U] = 0x04;
-    SglBeatWR_nPrm_8(Command, CommandValue, 24);
-
-    Command = 0xCA;
-    CommandValue[0U] = 0x03;
-    CommandValue[1U] = 0x12;
-    CommandValue[2U] = 0x1A;
-    CommandValue[3U] = 0x24;
-    CommandValue[4U] = 0x32;
-    CommandValue[5U] = 0x4B;
-    CommandValue[6U] = 0x3B;
-    CommandValue[7U] = 0x29;
-    CommandValue[8U] = 0x1F;
-    CommandValue[9U] = 0x18;
-    CommandValue[10U] = 0x12;
-    CommandValue[11U] = 0x04;
-
-    CommandValue[12U] = 0x03;
-    CommandValue[13U] = 0x12;
-    CommandValue[14U] = 0x1A;
-    CommandValue[15U] = 0x24;
-    CommandValue[16U] = 0x32;
-    CommandValue[17U] = 0x4B;
-    CommandValue[18U] = 0x3B;
-    CommandValue[19U] = 0x29;
-    CommandValue[20U] = 0x1F;
-    CommandValue[21U] = 0x18;
-    CommandValue[22U] = 0x12;
-    CommandValue[23U] = 0x04;
-    SglBeatWR_nPrm_8(Command, CommandValue, 24);
-
-    
-//---Gamma setting end--------
-    //old ones:
-    
+    // Power Control 1
     Command = 0xD0;
-    CommandValue[0U] = 0x99;//DC4~1//A5. Set up clock cycle of the internal step up controller.
-    CommandValue[1U] = 0x06;//BT // Set Voltage step up factor.
-    CommandValue[2U] = 0x08;// default according to the datasheet - does nothing.
-    CommandValue[3U] = 0x20;// VCN step up cycles.
-    CommandValue[4U] = 0x29;//VC1, VC2// VCI3 voltage = 2.70V;  VCI2 voltage = 3.8V.
-    CommandValue[5U] = 0x04;// default 
-    CommandValue[6U] = 0x01;// default 
-    CommandValue[7U] = 0x00;// default 
-    CommandValue[8U] = 0x08;// default
-    CommandValue[9U] = 0x01;// default
-    CommandValue[10U]= 0x00;// default
-    CommandValue[11U]= 0x06;// default
-    CommandValue[12U]= 0x01;// default
-    CommandValue[13U]= 0x00;// default
-    CommandValue[14U]= 0x00;// default
-    CommandValue[15U]= 0x20;// default
-    SglBeatWR_nPrm_8(Command, CommandValue, 16);
+    CommandValue[0] = 0xA4;
+    CommandValue[1] = 0xA1;
+    SglBeatWR_nPrm_8(Command, CommandValue, 2);
 
-    Command = 0xD1;//VCOM setting
-    CommandValue[0U] = 0x00;//disable write to VDC[7:0]
-    CommandValue[1U] = 0x20;//45 38 VPLVL// voltage of γ correction registers for positive polarity
-    CommandValue[2U] = 0x20;//45 38 VNLVL// voltage of γ correction registers for negative polarity
-    CommandValue[3U] = 0x15;//32 2A VCOMDC// VNLVL x 0.063
-    SglBeatWR_nPrm_8(Command, CommandValue, 4);
+    // Positive Voltage Gamma Control
+    Command = 0xE0;
+    CommandValue[0] = 0xF0;
+    CommandValue[1] = 0x09;
+    CommandValue[2] = 0x0B;
+    CommandValue[3] = 0x06;
+    CommandValue[4] = 0x04;
+    CommandValue[5] = 0x15;
+    CommandValue[6] = 0x2F;
+    CommandValue[7] = 0x54;
+    CommandValue[8] = 0x42;
+    CommandValue[9] = 0x3C;
+    CommandValue[10] = 0x17;
+    CommandValue[11] = 0x14;
+    CommandValue[12] = 0x18;
+    CommandValue[13] = 0x1B;
+    SglBeatWR_nPrm_8(Command, CommandValue, 14);
 
-    Command = 0xE0;//NVM Access Control
-    CommandValue[0U] = 0x00;//NVM access is disabled
-    CommandValue[1U] = 0x00;//Erase operation (disabled).
-    CommandValue[2U] = 0x00;//TE pin works as tearing effect pin. 
-    CommandValue[3U] = 0x00; //according to the datasheet.
-    SglBeatWR_nPrm_8(Command, CommandValue, 4);
+    // Negative Voltage Gamma Control
+    Command = 0xE1;
+    CommandValue[0] = 0xF0;
+    CommandValue[1] = 0x09;
+    CommandValue[2] = 0x0B;
+    CommandValue[3] = 0x06;
+    CommandValue[4] = 0x04;
+    CommandValue[5] = 0x03;
+    CommandValue[6] = 0x2C;
+    CommandValue[7] = 0x43;
+    CommandValue[8] = 0x42;
+    CommandValue[9] = 0x3B;
+    CommandValue[10] = 0x16;
+    CommandValue[11] = 0x14;
+    CommandValue[12] = 0x17;
+    CommandValue[13] = 0x1B;
+    SglBeatWR_nPrm_8(Command, CommandValue, 14);
 
-    Command = 0xE1; //set_DDB_write_control
-    CommandValue[0U] = 0x00; 
-    CommandValue[1U] = 0x00;
-    CommandValue[2U] = 0x00;
-    CommandValue[3U] = 0x00;
-    CommandValue[4U] = 0x00;
-    CommandValue[5U] = 0x00;
-    SglBeatWR_nPrm_8(Command, CommandValue, 6);
-
-    Command = 0xE2; //NVM Load Control
-    CommandValue[0U] = 0x00; // does not execute data load from the NVM to each command
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
-
-    //Command = 0x36; //MADCTL
-    //CommandValue[0U] = 0x00;
-    //SglBeatWR_nPrm_8(Command, CommandValue, 1);
-
-    Command = 0x3A; // set_pixel_format
-    CommandValue[0U] = 0x55; // 16-Bit/pixel = 55h, 24-bit/pixel = 77h
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
-
-    Command = 0x2A; // TFT_CASET
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x00;
-    CommandValue[2U] = 0x01;
-    CommandValue[3U] = 0x3F;
-    SglBeatWR_nPrm_8(Command, CommandValue, 4);
-
-    Command = 0x2B; //TFT_PASET
-    CommandValue[0U] = 0x00;
-    CommandValue[1U] = 0x00;
-    CommandValue[2U] = 0x01;
-    CommandValue[3U] = 0xDF;
-    SglBeatWR_nPrm_8(Command, CommandValue, 4);
-
-    delay(120);
-    Command = 0x29; //TFT_DISPON
-    SglBeatWR_nPrm_8(Command, CommandValue, 0);
-
-    delay(120);
-    Serial.println("R61519 Initialized");
-#endif
+    // Display ON
+    Command = 0x29;
+    SglBeatWR_nPrm_8(Command, 0, 0);
+    delay(20);
 }
 
-FASTRUN void ILI948x_t4_mm::CSLow() 
+FASTRUN void ST7796s_t4_mm::CSLow() 
 {
   digitalWriteFast(_cs, LOW);       //Select TFT
 }
 
-FASTRUN void ILI948x_t4_mm::CSHigh() 
+FASTRUN void ST7796s_t4_mm::CSHigh() 
 {
   digitalWriteFast(_cs, HIGH);       //Deselect TFT
 }
 
-FASTRUN void ILI948x_t4_mm::DCLow() 
+FASTRUN void ST7796s_t4_mm::DCLow() 
 {
   digitalWriteFast(_dc, LOW);       //Writing command to TFT
 }
 
-FASTRUN void ILI948x_t4_mm::DCHigh() 
+FASTRUN void ST7796s_t4_mm::DCHigh() 
 {
   digitalWriteFast(_dc, HIGH);       //Writing data to TFT
 }
 
-FASTRUN void ILI948x_t4_mm::microSecondDelay()
+FASTRUN void ST7796s_t4_mm::microSecondDelay()
 {
   for (uint32_t i=0; i<99; i++) __asm__("nop\n\t");
 }
 
-FASTRUN void ILI948x_t4_mm::gpioWrite(){
+FASTRUN void ST7796s_t4_mm::gpioWrite(){
   pFlex->setIOPinToFlexMode(10);
   pinMode(12, OUTPUT);
   digitalWriteFast(12, HIGH);
 }
 
-FASTRUN void ILI948x_t4_mm::gpioRead(){
+FASTRUN void ST7796s_t4_mm::gpioRead(){
   pFlex->setIOPinToFlexMode(12);
   pinMode(10, OUTPUT);
   digitalWriteFast(10, HIGH);
 }
 
-FASTRUN void ILI948x_t4_mm::FlexIO_Init()
+FASTRUN void ST7796s_t4_mm::FlexIO_Init()
 {
   /* Get a FlexIO channel */
     pFlex = FlexIOHandler::flexIOHandler_list[1]; // use FlexIO2
@@ -1079,7 +492,7 @@ FASTRUN void ILI948x_t4_mm::FlexIO_Init()
     p->CTRL = FLEXIO_CTRL_FLEXEN | FLEXIO_CTRL_FASTACC;
 }
 
-FASTRUN void ILI948x_t4_mm::FlexIO_Config_SnglBeat_Read()
+FASTRUN void ST7796s_t4_mm::FlexIO_Config_SnglBeat_Read()
 {
   
     p->CTRL &= ~FLEXIO_CTRL_FLEXEN;
@@ -1132,7 +545,7 @@ FASTRUN void ILI948x_t4_mm::FlexIO_Config_SnglBeat_Read()
 
 }
 
-FASTRUN uint8_t ILI948x_t4_mm::readCommand(uint8_t const cmd){
+FASTRUN uint8_t ST7796s_t4_mm::readCommand(uint8_t const cmd){
   while(WR_DMATransferDone == false)
   {
     //Wait for any DMA transfers to complete
@@ -1180,7 +593,7 @@ FASTRUN uint8_t ILI948x_t4_mm::readCommand(uint8_t const cmd){
 };
 
 
-FASTRUN void ILI948x_t4_mm::FlexIO_Config_SnglBeat()
+FASTRUN void ST7796s_t4_mm::FlexIO_Config_SnglBeat()
 {
   
     p->CTRL &= ~FLEXIO_CTRL_FLEXEN;
@@ -1233,7 +646,7 @@ FASTRUN void ILI948x_t4_mm::FlexIO_Config_SnglBeat()
 
     }
 
-FASTRUN void ILI948x_t4_mm::FlexIO_Clear_Config_SnglBeat(){
+FASTRUN void ST7796s_t4_mm::FlexIO_Clear_Config_SnglBeat(){
     p->CTRL &= ~FLEXIO_CTRL_FLEXEN;
     p->CTRL |= FLEXIO_CTRL_SWRST;
     p->CTRL &= ~FLEXIO_CTRL_SWRST;
@@ -1252,7 +665,7 @@ FASTRUN void ILI948x_t4_mm::FlexIO_Clear_Config_SnglBeat(){
 
 }
 
-FASTRUN void ILI948x_t4_mm::FlexIO_Config_MultiBeat()
+FASTRUN void ST7796s_t4_mm::FlexIO_Config_MultiBeat()
 {
     uint32_t i;
     uint8_t MulBeatWR_BeatQty = SHIFTNUM * sizeof(uint32_t) / sizeof(uint8_t);                                //Number of beats = number of shifters * beats per shifter
@@ -1338,7 +751,7 @@ FASTRUN void ILI948x_t4_mm::FlexIO_Config_MultiBeat()
    p->SHIFTSDEN |= 1U << (SHIFTER_DMA_REQUEST); // enable DMA trigger when shifter status flag is set on shifter SHIFTER_DMA_REQUEST
 }
 
-FASTRUN void ILI948x_t4_mm::SglBeatWR_nPrm_8(uint32_t const cmd, const uint8_t *value = NULL, uint32_t const length = 0)
+FASTRUN void ST7796s_t4_mm::SglBeatWR_nPrm_8(uint32_t const cmd, const uint8_t *value = NULL, uint32_t const length = 0)
 {
   while(WR_DMATransferDone == false)
   {
@@ -1388,7 +801,7 @@ FASTRUN void ILI948x_t4_mm::SglBeatWR_nPrm_8(uint32_t const cmd, const uint8_t *
     /* De-assert CS pin */
 }
 
-FASTRUN void ILI948x_t4_mm::SglBeatWR_nPrm_16(uint32_t const cmd, const uint16_t *value, uint32_t const length)
+FASTRUN void ST7796s_t4_mm::SglBeatWR_nPrm_16(uint32_t const cmd, const uint16_t *value, uint32_t const length)
 {
  while(WR_DMATransferDone == false)
   {
@@ -1452,10 +865,10 @@ FASTRUN void ILI948x_t4_mm::SglBeatWR_nPrm_16(uint32_t const cmd, const uint16_t
 }
 
 
-ILI948x_t4_mm * ILI948x_t4_mm::dmaCallback = nullptr;
-DMAChannel ILI948x_t4_mm::flexDma;
+ST7796s_t4_mm * ST7796s_t4_mm::dmaCallback = nullptr;
+DMAChannel ST7796s_t4_mm::flexDma;
 
-FASTRUN void ILI948x_t4_mm::MulBeatWR_nPrm_DMA(uint32_t const cmd,  const void *value, uint32_t const length) 
+FASTRUN void ST7796s_t4_mm::MulBeatWR_nPrm_DMA(uint32_t const cmd,  const void *value, uint32_t const length) 
 {
   while(WR_DMATransferDone == false)
   {
@@ -1579,7 +992,7 @@ FASTRUN void ILI948x_t4_mm::MulBeatWR_nPrm_DMA(uint32_t const cmd,  const void *
    }
 }
 
-FASTRUN void ILI948x_t4_mm::_onCompleteCB()
+FASTRUN void ST7796s_t4_mm::_onCompleteCB()
 {
 if (_callback){
       _callback();
@@ -1588,7 +1001,7 @@ if (_callback){
 }
 
 
-FASTRUN void ILI948x_t4_mm::dmaISR()
+FASTRUN void ST7796s_t4_mm::dmaISR()
 {
   flexDma.clearInterrupt();
   asm volatile ("dsb"); // prevent interrupt from re-entering
@@ -1596,7 +1009,7 @@ FASTRUN void ILI948x_t4_mm::dmaISR()
 }
 
 
-FASTRUN void ILI948x_t4_mm::flexDma_Callback()
+FASTRUN void ST7796s_t4_mm::flexDma_Callback()
 {
     //Serial.printf("DMA callback start triggred \n");
     
@@ -1687,7 +1100,7 @@ FASTRUN void ILI948x_t4_mm::flexDma_Callback()
 }
 
 
-void ILI948x_t4_mm::DMAerror(){
+void ST7796s_t4_mm::DMAerror(){
   if(flexDma.error()){
     Serial.print("DMA error: ");
     Serial.println(DMA_ES, HEX);
