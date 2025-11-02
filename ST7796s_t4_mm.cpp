@@ -47,136 +47,23 @@ FLASHMEM void ST7796s_t4_mm::begin(uint8_t buad_div)
   digitalWriteFast(_dc, HIGH);
   digitalWriteFast(_rst, HIGH);
 
-  delay(15);
-  digitalWrite(_rst, LOW);
-  delay(15);
-  digitalWriteFast(_rst, HIGH);
-  delay(100);
-
   FlexIO_Init();
 
-  displayInit();
-  /*
-  setBitDepth(_bitDepth);
+  delay(5);
+  digitalWrite(_rst, LOW);
+  delay(10);
+  digitalWriteFast(_rst, HIGH);
+  delay(50);
 
-  setTearingEffect(_bTearingOn);
-  if (_bTearingOn == true) {
-    setTearingScanLine(_tearingScanLine);
-  }  
-  setFrameRate(_frameRate);
-  */
- 
+
+  displayInit();
+
   _width  = _TFTWIDTH;
   _height = _TFTHEIGHT;
 
   
 }
 
-
-FLASHMEM uint8_t ST7796s_t4_mm::setBitDepth(uint8_t bitDepth)  
-{
-  uint8_t bd;
-
-  switch (bitDepth) {
-    case 16:  _bitDepth = 16;
-              bd = 0x55;
-              break;
-    case 18:  _bitDepth = 18;
-              bd = 0x66;
-              break;
-    case 24:  //Unsupported
-              return _bitDepth;
-              break;
-    default:  //Unsupported
-              return _bitDepth;
-              break;
-  }
- 
-  SglBeatWR_nPrm_8(ST7796S_COLMOD, &bd, 1);
-
-  //Insert small delay here as rapid calls appear to fail
-  delay(10);
-
-  return _bitDepth;
-}
-
-FLASHMEM uint8_t ST7796s_t4_mm::getBitDepth()
-{
-  return _bitDepth;
-}
-
-FLASHMEM void ST7796s_t4_mm::setFrameRate(uint8_t frRate) 
-{
- _frameRate = frRate;
-
-  uint8_t fr28Hz[2] = {0x00, 0x11}; // 28.78fps, 17 clocks
-  uint8_t fr30Hz[2] = {0x10, 0x11}; // 30.38fps, 17 clocks
-  uint8_t fr39Hz[2] = {0x50, 0x11}; // 39.06fps, 17 clocks
-  uint8_t fr45Hz[2] = {0x70, 0x11}; // 45.57fps, 17 clocks
-  uint8_t fr54Hz[2] = {0x90, 0x11}; // 54.69ps, 17 clocks
-  uint8_t fr60Hz[2] = {0xA0, 0x11}; // 60.76fps, 17 clocks
-  uint8_t fr68Hz[2] = {0xB0, 0x11}; // 68.36fps, 17 clocks (ST7796S default)
-  uint8_t fr78Hz[2] = {0xC0, 0x11}; // 78.13fps, 17 clocks
-  uint8_t fr91Hz[2] = {0xD0, 0x11}; // 91.15fps, 17 clocks
-
-  uint8_t frData[2];
-  //Select parameters for frame rate
-  switch (frRate) {
-    case 28: memcpy(frData, fr28Hz, sizeof fr28Hz); break;
-    case 30: memcpy(frData, fr30Hz, sizeof fr30Hz); break;
-    case 39: memcpy(frData, fr39Hz, sizeof fr39Hz); break;
-    case 45: memcpy(frData, fr45Hz, sizeof fr45Hz); break;
-    case 54: memcpy(frData, fr54Hz, sizeof fr54Hz); break;
-    case 60: memcpy(frData, fr60Hz, sizeof fr60Hz); break;
-    case 68: memcpy(frData, fr68Hz, sizeof fr68Hz); break;
-    case 78: memcpy(frData, fr78Hz, sizeof fr78Hz); break;
-    case 91: memcpy(frData, fr91Hz, sizeof fr91Hz); break;
-    default: memcpy(frData, fr60Hz, sizeof fr60Hz); _frameRate = 60; break;
-  }
-
-  SglBeatWR_nPrm_8(ST7796S_FRMCTR1, frData, 2);
-  
-}
-
-FLASHMEM uint8_t ST7796s_t4_mm::getFrameRate()
-{
-  return _frameRate;
-}
-
-FLASHMEM void ST7796s_t4_mm::setTearingEffect(bool tearingOn)
-{
-
-  _bTearingOn = tearingOn;
-  uint8_t mode = 0x00;
-  
-  CSLow();
-  if (_bTearingOn == true) {
-    SglBeatWR_nPrm_8(ST7796S_TEON, &mode, 1);        //Tearing effect line on, mode 0 (V-Blanking)
-  } else {
-    SglBeatWR_nPrm_8(ST7796S_TEOFF,0,0);
-  }
-  CSHigh();
-
-}
-
-FLASHMEM bool ST7796s_t4_mm::getTearingEffect()
-{
-  return _bTearingOn;
-}
-
-FLASHMEM void ST7796s_t4_mm::setTearingScanLine(uint16_t scanLine)
-{
-  _tearingScanLine = scanLine;
-  
-  uint8_t params[2] = {(uint8_t)(_tearingScanLine << 8), (uint8_t)(_tearingScanLine & 0xFF)};
-  SglBeatWR_nPrm_8(ST7796S_TESLWR, params, 2);      //Tearing effect write scan line : 0x00 0x00 = line 0 (default), 0x00 0xA0 = line 160, 0x00 0xF0 = line 240
-
-}
-
-FLASHMEM uint16_t ST7796s_t4_mm::getTearingScanLine()
-{
-  return _tearingScanLine;
-}
 
 FLASHMEM void ST7796s_t4_mm::setRotation(uint8_t r) 
 { 
@@ -209,40 +96,22 @@ FLASHMEM void ST7796s_t4_mm::onCompleteCB(CBF callback)
 
 FASTRUN void ST7796s_t4_mm::setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) 
 {
-  uint8_t Command;
   uint8_t CommandValue[4];
 
-  Command = 0x2A;
   CommandValue[0U] = x1 >> 8U;
   CommandValue[1U] = x1 & 0xFF;
   CommandValue[2U] = x2 >> 8U;
   CommandValue[3U] = x2 & 0xFF;
-  SglBeatWR_nPrm_8(Command, CommandValue, 4U);
+  SglBeatWR_nPrm_8(ST7796S_CASET, CommandValue, 4U);
 
-  Command = 0x2B;
   CommandValue[0U] = y1 >> 8U;
   CommandValue[1U] = y1 & 0xFF;
   CommandValue[2U] = y2 >> 8U;
   CommandValue[3U] = y2 & 0xFF;
-  SglBeatWR_nPrm_8(Command, CommandValue, 4U);
+  SglBeatWR_nPrm_8(ST7796S_PASET, CommandValue, 4U);
 
 }
 
-
-FASTRUN void ST7796s_t4_mm::displayInfo(){
-  CSLow();
-  Serial.printf("Manufacturer ID: 0x%02X\n",    readCommand(ST7796S_RDID1)); 
-  Serial.printf("Module Version ID: 0x%02X\n",  readCommand(ST7796S_RDID2)); 
-  Serial.printf("Module ID: 0x%02X\n",          readCommand(ST7796S_RDID3)); 
-	Serial.printf("Display Power Mode: 0x%02X\n", readCommand(ST7796S_RDMODE));
-	Serial.printf("MADCTL Mode: 0x%02X\n",        readCommand(ST7796S_RDMADCTL));
-	Serial.printf("Pixel Format: 0x%02X\n",       readCommand(ST7796S_RDCOLMOD));
-	Serial.printf("Image Format: 0x%02X\n",       readCommand(ST7796S_RDIMGFMT)); 
-  Serial.printf("Signal Mode: 0x%02X\n",        readCommand(ST7796S_RDDSM)); 
-  uint8_t sdRes = readCommand(ST7796S_RDSELFDIAG);
-  Serial.printf("Self Diagnostic: %s (0x%02X)\n", sdRes == 0xc0 ? "OK" : "Failed", sdRes);
-CSHigh();
-}
 
 FASTRUN void ST7796s_t4_mm::pushPixels16bit(const uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
@@ -275,126 +144,67 @@ FASTRUN void ST7796s_t4_mm::pushPixels16bitDMA(const uint16_t * pcolors, uint16_
 
 
 
-
 ///////////////////
 //Private functions
 ///////////////////
 FLASHMEM void ST7796s_t4_mm::displayInit() 
 {
-    uint8_t Command;
-    uint8_t CommandValue[25];
+    
+#define DELAY 0x80
+// Initialization command sequence for ST7796
+    static const uint8_t cmd_ST7796[] = {
+      17,  // Number of commands
 
-    // Software Reset
-    Command = 0x01;
-    SglBeatWR_nPrm_8(Command, 0, 0);
-    delay(120);
+      ST7796S_SWRESET, DELAY,                  150,
+      ST7796S_SLPOUT, DELAY,                  120,
 
-    // Sleep Out
-    Command = 0x11;
-    SglBeatWR_nPrm_8(Command, 0, 0);
-    delay(120);
+      0xF0, 1,                                0xC3,
+      0xF0, 1,                                0x96,
 
-    // Interface Pixel Format (16-bit/pixel)
-    Command = 0x3A;
-    CommandValue[0] = 0x55; // 16-bit
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+      ST7796S_MADCTL, 1,                      (0x40 | 0x08),
+      ST7796S_COLMOD, 1,                      0x05,
+      //ST7796S_FRMCTR1, 2,                     0xA0, 0x10, //Frame Rate Control - 57.9Hz
+      ST7796S_INVCTR, 1,                      0x01,
+      ST7796S_DFUNCTR, 3,                     0x8A, 0x07, 0x27,
 
-    // Memory Access Control (MADCTL)
-    // No rotation: RGB order, row/column order = 0
-    Command = 0x36;
-    CommandValue[0] = 0x00; 
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+      0xE8, 8,                                0x40, 0x8A, 0x00, 0x00, 0x29, 0x19, 0xA5, 0x33,
 
-    // Porch Setting
-    Command = 0xB2;
-    CommandValue[0] = 0x0C;
-    CommandValue[1] = 0x0C;
-    CommandValue[2] = 0x00;
-    CommandValue[3] = 0x33;
-    CommandValue[4] = 0x33;
-    SglBeatWR_nPrm_8(Command, CommandValue, 5);
+      ST7796S_PWCTR2, 1,                      0x06,
+      ST7796S_PWCTR3, 1,                      0xA7,
 
-    // Gate Control
-    Command = 0xB7;
-    CommandValue[0] = 0x35;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+      ST7796S_VMCTR1, DELAY | 1,              0x18, 120,
 
-    // VCOM Setting
-    Command = 0xBB;
-    CommandValue[0] = 0x28;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+      ST7796S_PGAMCTRL, 14,                    0xF0, 0x09, 0x0B, 0x06, 0x04, 0x15, 0x2F, 0x54,
+                                              0x42, 0x3C, 0x17, 0x14, 0x18, 0x1B,
 
-    // LCM Control
-    Command = 0xC0;
-    CommandValue[0] = 0x2C;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+      ST7796S_NGAMCTRL, DELAY | 14,            0xE0, 0x09, 0x0B, 0x06, 0x04, 0x03, 0x2B, 0x43,
+                                              0x42, 0x3B, 0x16, 0x14, 0x17, 0x1B, 120,
 
-    // VDV and VRH Command Enable
-    Command = 0xC2;
-    CommandValue[0] = 0x01;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+      0xF0, 1,                                0x3C,
+      0xF0, DELAY | 1,                        0x69, 120,
 
-    // VRH Set
-    Command = 0xC3;
-    CommandValue[0] = 0x0B;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+      ST7796S_DISPON, DELAY,                  120
+    };
 
-    // VDV Set
-    Command = 0xC4;
-    CommandValue[0] = 0x20;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+// Sends a sequence of commands to the ST7796 display
+  const uint8_t* commands = cmd_ST7796;
+  uint8_t numCommands = *commands++;  // first byte = number of commands
 
-    // Frame Rate Control in Normal Mode
-    Command = 0xC6;
-    CommandValue[0] = 0x0F;
-    SglBeatWR_nPrm_8(Command, CommandValue, 1);
+  while (numCommands--) {
+    uint8_t cmd = *commands++;
+    uint8_t x = *commands++;
+    uint8_t numArgs = x & 0x7F;
+    bool hasDelay = x & DELAY;
 
-    // Power Control 1
-    Command = 0xD0;
-    CommandValue[0] = 0xA4;
-    CommandValue[1] = 0xA1;
-    SglBeatWR_nPrm_8(Command, CommandValue, 2);
+    SglBeatWR_nPrm_8(cmd, (uint8_t*)commands, numArgs);  // Send command + args
+    commands += numArgs;
 
-    // Positive Voltage Gamma Control
-    Command = 0xE0;
-    CommandValue[0] = 0xF0;
-    CommandValue[1] = 0x09;
-    CommandValue[2] = 0x0B;
-    CommandValue[3] = 0x06;
-    CommandValue[4] = 0x04;
-    CommandValue[5] = 0x15;
-    CommandValue[6] = 0x2F;
-    CommandValue[7] = 0x54;
-    CommandValue[8] = 0x42;
-    CommandValue[9] = 0x3C;
-    CommandValue[10] = 0x17;
-    CommandValue[11] = 0x14;
-    CommandValue[12] = 0x18;
-    CommandValue[13] = 0x1B;
-    SglBeatWR_nPrm_8(Command, CommandValue, 14);
-
-    // Negative Voltage Gamma Control
-    Command = 0xE1;
-    CommandValue[0] = 0xF0;
-    CommandValue[1] = 0x09;
-    CommandValue[2] = 0x0B;
-    CommandValue[3] = 0x06;
-    CommandValue[4] = 0x04;
-    CommandValue[5] = 0x03;
-    CommandValue[6] = 0x2C;
-    CommandValue[7] = 0x43;
-    CommandValue[8] = 0x42;
-    CommandValue[9] = 0x3B;
-    CommandValue[10] = 0x16;
-    CommandValue[11] = 0x14;
-    CommandValue[12] = 0x17;
-    CommandValue[13] = 0x1B;
-    SglBeatWR_nPrm_8(Command, CommandValue, 14);
-
-    // Display ON
-    Command = 0x29;
-    SglBeatWR_nPrm_8(Command, 0, 0);
-    delay(20);
+    if (hasDelay) {
+      uint8_t ms = *commands++;
+      delay(ms);
+    }
+  }
+  SglBeatWR_nPrm_8(0x21, 0,0);
 }
 
 FASTRUN void ST7796s_t4_mm::CSLow() 
@@ -423,15 +233,15 @@ FASTRUN void ST7796s_t4_mm::microSecondDelay()
 }
 
 FASTRUN void ST7796s_t4_mm::gpioWrite(){
-  pFlex->setIOPinToFlexMode(10);
-  pinMode(12, OUTPUT);
-  digitalWriteFast(12, HIGH);
+  pFlex->setIOPinToFlexMode(WR_PIN[0]);
+  //pinMode(RD_PIN[0], OUTPUT);
+  //digitalWriteFast(RD_PIN[0], HIGH);
 }
 
 FASTRUN void ST7796s_t4_mm::gpioRead(){
-  pFlex->setIOPinToFlexMode(12);
-  pinMode(10, OUTPUT);
-  digitalWriteFast(10, HIGH);
+  //pFlex->setIOPinToFlexMode(RD_PIN[0]);
+  //pinMode(WR_PIN[0], OUTPUT);
+  //digitalWriteFast(WR_PIN[0], HIGH);
 }
 
 FASTRUN void ST7796s_t4_mm::FlexIO_Init()
@@ -443,8 +253,8 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Init()
     /* Pointer to the hardware structure in the FlexIO channel */
     hw = &pFlex->hardware();
     /* Basic pin setup */
-    pinMode(10, OUTPUT); // FlexIO2:0 WR
-    pinMode(12, OUTPUT); // FlexIO2:1 RD
+    pinMode(WR_PIN[0], OUTPUT); // FlexIO2:16 WR
+    pinMode(RD_PIN[0], OUTPUT); // FlexIO2:17 RD
     pinMode(40, OUTPUT); // FlexIO2:4 D0
     pinMode(41, OUTPUT); // FlexIO2:5 |
     pinMode(42, OUTPUT); // FlexIO2:6 |
@@ -454,11 +264,10 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Init()
     pinMode(6, OUTPUT); // FlexIO2:10 |
     pinMode(9, OUTPUT); // FlexIO2:11 D7
 
-    digitalWriteFast(10,HIGH);
 
     /* High speed and drive strength configuration */
-    *(portControlRegister(10)) = 0xFF;
-    *(portControlRegister(12)) = 0xFF; 
+    *(portControlRegister(WR_PIN[0])) = 0xFF;
+    *(portControlRegister(RD_PIN[0])) = 0xFF; 
     *(portControlRegister(40)) = 0xFF;
     *(portControlRegister(41)) = 0xFF;
     *(portControlRegister(42)) = 0xFF;
@@ -472,7 +281,7 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Init()
     pFlex->setClockSettings(3, 1, 0); // (480 MHz source, 1+1, 1+0) >> 480/2/1 >> 240Mhz
 
     /* Set up pin mux */
-    pFlex->setIOPinToFlexMode(10);
+    pFlex->setIOPinToFlexMode(WR_PIN[0]);
     pFlex->setIOPinToFlexMode(40);
     pFlex->setIOPinToFlexMode(41);
     pFlex->setIOPinToFlexMode(42);
@@ -482,115 +291,14 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Init()
     pFlex->setIOPinToFlexMode(6);
     pFlex->setIOPinToFlexMode(9);
 
-    digitalWriteFast(12, HIGH);
-
-
-
+    digitalWrite(RD_PIN[0], HIGH); // FlexIO2:17 RD)
+  
     /* Enable the clock */
     hw->clock_gate_register |= hw->clock_gate_mask  ;
     /* Enable the FlexIO with fast access */
     p->CTRL = FLEXIO_CTRL_FLEXEN | FLEXIO_CTRL_FASTACC;
 }
 
-FASTRUN void ST7796s_t4_mm::FlexIO_Config_SnglBeat_Read()
-{
-  
-    p->CTRL &= ~FLEXIO_CTRL_FLEXEN;
-    p->CTRL |= FLEXIO_CTRL_SWRST;
-    p->CTRL &= ~FLEXIO_CTRL_SWRST;
-
-    gpioRead();
-
-    /* Configure the shifters */
-    p->SHIFTCFG[3] = 
-        //FLEXIO_SHIFTCFG_INSRC                                                  /* Shifter input */
-        FLEXIO_SHIFTCFG_SSTOP(0)                                              /* Shifter stop bit disabled */
-       | FLEXIO_SHIFTCFG_SSTART(0)                                             /* Shifter start bit disabled and loading data on enabled */
-       | FLEXIO_SHIFTCFG_PWIDTH(7);                                            /* Bus width */
-     
-    p->SHIFTCTL[3] = 
-        FLEXIO_SHIFTCTL_TIMSEL(0)                                              /* Shifter's assigned timer index */
-      | FLEXIO_SHIFTCTL_TIMPOL*(1)                                             /* Shift on posedge of shift clock */
-      | FLEXIO_SHIFTCTL_PINCFG(0)                                              /* Shifter's pin configured as input */
-      | FLEXIO_SHIFTCTL_PINSEL(4)                                              /* Shifter's pin start index */
-      | FLEXIO_SHIFTCTL_PINPOL*(0)                                             /* Shifter's pin active high */
-      | FLEXIO_SHIFTCTL_SMOD(1);                                               /* Shifter mode as recieve */
-
-    /* Configure the timer for shift clock */
-    p->TIMCMP[0] = 
-        (((1 * 2) - 1) << 8)                                                   /* TIMCMP[15:8] = number of beats x 2 – 1 */
-      | (((30)/2) - 1);                                                        /* TIMCMP[7:0] = baud rate divider / 2 – 1 ::: 30 = 8Mhz with current controller speed */
-    
-    p->TIMCFG[0] = 
-        FLEXIO_TIMCFG_TIMOUT(0)                                                /* Timer output logic one when enabled and not affected by reset */
-      | FLEXIO_TIMCFG_TIMDEC(0)                                                /* Timer decrement on FlexIO clock, shift clock equals timer output */
-      | FLEXIO_TIMCFG_TIMRST(0)                                                /* Timer never reset */
-      | FLEXIO_TIMCFG_TIMDIS(2)                                                /* Timer disabled on timer compare */
-      | FLEXIO_TIMCFG_TIMENA(2)                                                /* Timer enabled on trigger high */
-      | FLEXIO_TIMCFG_TSTOP(1)                                                 /* Timer stop bit disabled */
-      | FLEXIO_TIMCFG_TSTART*(0);                                              /* Timer start bit disabled */
-    
-    p->TIMCTL[0] = 
-        FLEXIO_TIMCTL_TRGSEL((((3) << 2) | 1))                                 /* Timer trigger selected as shifter's status flag */
-      | FLEXIO_TIMCTL_TRGPOL*(1)                                               /* Timer trigger polarity as active low */
-      | FLEXIO_TIMCTL_TRGSRC*(1)                                               /* Timer trigger source as internal */
-      | FLEXIO_TIMCTL_PINCFG(3)                                                /* Timer' pin configured as output */
-      | FLEXIO_TIMCTL_PINSEL(1)                                                /* Timer' pin index: WR pin */
-      | FLEXIO_TIMCTL_PINPOL*(1)                                               /* Timer' pin active low */
-      | FLEXIO_TIMCTL_TIMOD(1);                                                /* Timer mode as dual 8-bit counters baud/bit */
-
-  
-    /* Enable FlexIO */
-   p->CTRL |= FLEXIO_CTRL_FLEXEN;      
-
-}
-
-FASTRUN uint8_t ST7796s_t4_mm::readCommand(uint8_t const cmd){
-  while(WR_DMATransferDone == false)
-  {
-    //Wait for any DMA transfers to complete
-  }
-
-    FlexIO_Config_SnglBeat();
-    DCLow();
-
-    /* Write command index */
-    p->SHIFTBUF[0] = cmd;
-
-    /*Wait for transfer to be completed */
-    while(0 == (p->SHIFTSTAT & (1 << 0)))
-    {
-    }
-    while(0 == (p->TIMSTAT & (1 << 0)))
-            {  
-            }
-
-    /* De-assert RS pin */
-    microSecondDelay();
-    DCHigh();
-    FlexIO_Clear_Config_SnglBeat();
-    FlexIO_Config_SnglBeat_Read();
-
-    uint8_t dummy;
-    uint8_t data = 0;
-
-    while (0 == (p->SHIFTSTAT & (1 << 3)))
-        {
-        }
-    dummy = p->SHIFTBUFBYS[3];
-
-    while (0 == (p->SHIFTSTAT & (1 << 3)))
-        {
-        }
-    data = p->SHIFTBUFBYS[3];
-
-    //Serial.printf("Dummy 0x%x, data 0x%x\n", dummy, data);
-    
-    
-    //Set FlexIO back to Write mode
-    FlexIO_Config_SnglBeat();
-  return data;
-};
 
 
 FASTRUN void ST7796s_t4_mm::FlexIO_Config_SnglBeat()
@@ -599,8 +307,6 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Config_SnglBeat()
     p->CTRL &= ~FLEXIO_CTRL_FLEXEN;
     p->CTRL |= FLEXIO_CTRL_SWRST;
     p->CTRL &= ~FLEXIO_CTRL_SWRST;
-
-    gpioWrite();
 
     /* Configure the shifters */
     p->SHIFTCFG[0] = 
@@ -636,7 +342,7 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Config_SnglBeat()
       | FLEXIO_TIMCTL_TRGPOL*(1)                                               /* Timer trigger polarity as active low */
       | FLEXIO_TIMCTL_TRGSRC*(1)                                               /* Timer trigger source as internal */
       | FLEXIO_TIMCTL_PINCFG(3)                                                /* Timer' pin configured as output */
-      | FLEXIO_TIMCTL_PINSEL(0)                                                /* Timer' pin index: WR pin */
+      | FLEXIO_TIMCTL_PINSEL(WR_PIN[1])                                                /* Timer' pin index: WR pin */
       | FLEXIO_TIMCTL_PINPOL*(1)                                               /* Timer' pin active low */
       | FLEXIO_TIMCTL_TIMOD(1);                                                /* Timer mode as dual 8-bit counters baud/bit */
 
@@ -674,7 +380,6 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Config_MultiBeat()
     p->CTRL |= FLEXIO_CTRL_SWRST;
     p->CTRL &= ~FLEXIO_CTRL_SWRST;
 
-    gpioWrite();
 
     for(i=0; i<=SHIFTNUM-1; i++)
     {
@@ -682,7 +387,7 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Config_MultiBeat()
         FLEXIO_SHIFTCFG_INSRC*(1U)                                                /* Shifter input from next shifter's output */
       | FLEXIO_SHIFTCFG_SSTOP(0U)                                                 /* Shifter stop bit disabled */
       | FLEXIO_SHIFTCFG_SSTART(0U)                                                /* Shifter start bit disabled and loading data on enabled */
-      | FLEXIO_SHIFTCFG_PWIDTH(8U-1U);                                            /* 8 bit shift width */
+      | FLEXIO_SHIFTCFG_PWIDTH(7U);                                            /* 8 bit shift width */
     }
 
     p->SHIFTCTL[0] = 
@@ -723,8 +428,8 @@ FASTRUN void ST7796s_t4_mm::FlexIO_Config_MultiBeat()
         FLEXIO_TIMCTL_TRGSEL((0 << 2) | 1U)                                       /* Timer trigger selected as highest shifter's status flag */
       | FLEXIO_TIMCTL_TRGPOL*(1U)                                                 /* Timer trigger polarity as active low */
       | FLEXIO_TIMCTL_TRGSRC*(1U)                                                 /* Timer trigger source as internal */
-      | FLEXIO_TIMCTL_PINCFG(3U)                                                  /* Timer' pin configured as output */
-      | FLEXIO_TIMCTL_PINSEL(0)                                                   /* Timer' pin index: WR pin */
+      | FLEXIO_TIMCTL_PINCFG(3)                                                  /* Timer' pin configured as output */
+      | FLEXIO_TIMCTL_PINSEL(WR_PIN[1])                                                   /* Timer' pin index: WR pin */
       | FLEXIO_TIMCTL_PINPOL*(1U)                                                 /* Timer' pin active low */
       | FLEXIO_TIMCTL_TIMOD(1U);                                                  /* Timer mode 8-bit baud counter */
 
@@ -764,8 +469,9 @@ FASTRUN void ST7796s_t4_mm::SglBeatWR_nPrm_8(uint32_t const cmd, const uint8_t *
     
     //delay(1);
     CSLow();
+    microSecondDelay();
     DCLow();
-
+    microSecondDelay(); 
     /* Write command index */
     p->SHIFTBUF[0] = cmd;
 
@@ -773,12 +479,7 @@ FASTRUN void ST7796s_t4_mm::SglBeatWR_nPrm_8(uint32_t const cmd, const uint8_t *
     while(0 == (p->SHIFTSTAT & (1 << 0)))
     {
     }
-    while(0 == (p->TIMSTAT & (1 << 0)))
-            {  
-            }
-
     /* De-assert RS pin */
-    
     microSecondDelay();
     DCHigh();
     microSecondDelay();
@@ -792,9 +493,6 @@ FASTRUN void ST7796s_t4_mm::SglBeatWR_nPrm_8(uint32_t const cmd, const uint8_t *
             {  
             }
         }
-        while(0 == (p->TIMSTAT & (1 << 0)))
-            {  
-            }
     }
     microSecondDelay();
     CSHigh();
@@ -811,8 +509,9 @@ FASTRUN void ST7796s_t4_mm::SglBeatWR_nPrm_16(uint32_t const cmd, const uint16_t
     uint16_t buf;
     /* Assert CS, RS pins */
     CSLow();
+    microSecondDelay();
     DCLow();
-    //microSecondDelay();
+    microSecondDelay();
     
     /* Write command index */
     p->SHIFTBUF[0] = cmd;
@@ -880,8 +579,9 @@ FASTRUN void ST7796s_t4_mm::MulBeatWR_nPrm_DMA(uint32_t const cmd,  const void *
 
     FlexIO_Config_SnglBeat();
     CSLow();
+    microSecondDelay();
     DCLow();
-
+    microSecondDelay();
     /* Write command index */
     p->SHIFTBUF[0] = cmd;
 

@@ -1,12 +1,14 @@
 #ifndef _ST7796s_t4_mm_H_
 #define _ST7796s_t4_mm_H_
 
-
+const int WR_PIN[] = {8, 16};
+const int RD_PIN[] = {7, 17};
 
 #include "Arduino.h"
 #include "FlexIO_t4.h"
 #include "DMAChannel.h"
 
+#define ST7796S
 
 #define SHIFTNUM 4 // number of shifters used (must be 1, 2, 4, or 8)
 #define SHIFTER_DMA_REQUEST 3 // only 0, 1, 2, 3 expected to work
@@ -103,34 +105,12 @@ class ST7796s_t4_mm {
   public:
     ST7796s_t4_mm(int8_t dc, int8_t cs = -1, int8_t rst = -1);
     void begin(uint8_t buad_div = 20);
-    uint8_t getBusSpd();
-
-
-    uint8_t setBitDepth(uint8_t bitDepth);
-    uint8_t getBitDepth();
-
-    void setFrameRate(uint8_t frRate);
-    uint8_t getFrameRate();
-
-    void setTearingEffect(bool tearingOn);
-    bool getTearingEffect();
-
-    void setTearingScanLine(uint16_t scanLine);
-    uint16_t getTearingScanLine();
-
     void setRotation(uint8_t r);
     void invertDisplay(bool invert);
-    void displayInfo();
     void setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
-
     void pushPixels16bit(const uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
     void pushPixels16bitDMA(const uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 
-
-    uint8_t readCommand(uint8_t const cmd);
-    
-    //void pushPixels16bitTearing(uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2 );
-    //void pushPixels24bitTearing(uint16_t * pcolors, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2 );
     void DMAerror();
 
     typedef void(*CBF)();
@@ -148,7 +128,7 @@ class ST7796s_t4_mm {
 
     uint8_t _bitDepth = 16;
     uint8_t _rotation = 0;
-    const uint8_t MADCTL[5] = MADCTL_ARRAY;
+    uint8_t MADCTL[5];
 
     uint8_t _frameRate = 60;
 
@@ -180,7 +160,6 @@ class ST7796s_t4_mm {
     void FlexIO_Config_SnglBeat();
     void FlexIO_Clear_Config_SnglBeat();
     void FlexIO_Config_MultiBeat();
-    void FlexIO_Config_SnglBeat_Read();
 
     void SglBeatWR_nPrm_8(uint32_t const cmd, uint8_t const *value , uint32_t const length);
     void SglBeatWR_nPrm_16(uint32_t const cmd, const uint16_t *value, uint32_t const length);
